@@ -48,7 +48,7 @@ Run the following command to install ssh (requires an active internet connection
 
 ```bash
 # Exposes an ssh server on the device
-curl -s curl https://raw.githubusercontent.com/JohnnyBeProgramming/pi-toolkit/master/setup/ssh | bash
+curl -s https://raw.githubusercontent.com/JohnnyBeProgramming/pi-toolkit/master/setup/ssh | bash
 ```
 
 Now you can connect to the remote device using your device username and the `ssh` command:

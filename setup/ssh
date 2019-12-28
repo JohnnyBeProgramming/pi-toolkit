@@ -5,8 +5,8 @@ set -euo pipefail # Stop running the script on first error...
 # Enables remote SSH access to the rasberry pi device
 # See also: https://www.raspberrypi.org/documentation/remote-access/ssh/
 
-echo sudo systemctl enable ssh
-echo sudo systemctl start ssh
+sudo systemctl enable ssh
+sudo systemctl start ssh
 
 # -----------------------------------------------------------------------------
 # While we are on the device, lets get the local SSH address (note it down for later):
