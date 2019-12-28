@@ -12,7 +12,7 @@ The tooling and functionality included in this repository:
 
 ## Quickstart
 
-The following quickstart guides will help you to get you going.
+The following quickstart guides will help you to get going.
 
 ### Run remote scripts from a github repo (on your machine or Rasberry Pi )
 
