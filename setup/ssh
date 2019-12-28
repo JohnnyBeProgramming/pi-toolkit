@@ -5,9 +5,32 @@ set -euo pipefail # Stop running the script on first error...
 # Enables remote SSH access to the rasberry pi device
 # See also: https://www.raspberrypi.org/documentation/remote-access/ssh/
 
-sudo systemctl enable ssh
-sudo systemctl start ssh
+echo sudo systemctl enable ssh
+echo sudo systemctl start ssh
 
-# On a VM, you need to set your network to be able to ssh into the VM
-# 1) VirtualBox, go to Settings -> Network -> on Adapter 1 choose Host-only adapter->click OK.
-# 2) Inside VM, run the command `hostname -I | cut -d ' ' -f1`
+# -----------------------------------------------------------------------------
+# While we are on the device, lets get the local SSH address (note it down for later):
+# -----------------------------------------------------------------------------
+BOLD="\e[1m"
+NONE="\e[0m"
+WHITE="\e[97m"
+BRIGHT="\e[1m"
+BLUE="\e[34m"
+YELLOW="\e[33m"
+DEBUG="\e[90m"
+UNDERLINE="\e[4m"
+ARGS="\e[95m"
+LINK="${UNDERLINE}${BLUE}${BRIGHT}"
+TITLE="${UNDERLINE}${WHITE}${BRIGHT}${BOLD}"
+WARN="${BRIGHT}${BOLD}${YELLOW}"
+printf "
+${DEBUG}${UNDERLINE}If you are using a VM (like VirtualBox), you need to set your network settings...${NONE}${DEBUG}
+In VirtualBox, go to:
+-> Settings -> Network -> Adapter 1 
+-> Choose 'Host-only adapter' 
+-> OK ${NONE}
+
+${TITLE}You can connect with a remote SSH agent to this device at:${NONE}\n
+${DEBUG} -> ${WHITE}ssh ${LINK}${USER}@$(hostname -I | cut -d ' ' -f1)${NONE} \
+${DEBUG}[ ${ARGS}<command>${DEBUG} ] ${NONE}\n
+"

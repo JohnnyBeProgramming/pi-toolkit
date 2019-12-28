@@ -2,11 +2,12 @@
 # -----------------------------------------------------------------------------
 set -euo pipefail # Stop running the script on first error...
 # -----------------------------------------------------------------------------
-remote_addr=${remote_addr:-"pi@127.0.0.1"}
-remote_path=${remote_path:-"/home/pi/.pi-toolkit"}
+remote_addr=${1:-"pi@127.0.0.1"}
+remote_path=${2:-"/home/pi/"}
+backup_path=${2:-"./backups/"}
 
 # Promt the user for the remote host's user and address
-read -p "Target Hostname (default: ${remote_addr}): " hostname
+[ -z remote_addr ] && read -p "Target Hostname (default: ${remote_addr}): " hostname
 if [ -z hostname ]
 then
     remote_addr=${hostname}
@@ -28,5 +29,5 @@ tar -czf - \
     --exclude=/dev \
     --exclude=/root \
     --exclude=/share/Archive \
-    ./
-" > backups/${zip_file}
+    ${remote_path}
+" > ${backup_path}/${zip_file}

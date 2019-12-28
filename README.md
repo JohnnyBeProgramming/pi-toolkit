@@ -4,7 +4,7 @@ A set of scripts and tooling to remotely setup and control Rasberry Pi's.
 
 ## Main features & functionality
 
-The functionality included:
+The tooling and functionality included:
 
 - ./setup - Scripts used to install various pieces of software
 - ./remote - Some helper scripts to remotely control a Pi through ssh
@@ -12,7 +12,7 @@ The functionality included:
 
 ## Quickstart
 
-One of the first things to do, is to set up and enable ssh on a Rasberry Pi.
+One of the first things to do, is to set up and enable `ssh` on a `Rasberry Pi`.
 This enables us to remotely control the device, and perform actions such as
 backup and restore.
 
@@ -24,9 +24,6 @@ Note that this will require an active internet connection.
 ```
 # Exposes an ssh server on the device
 bash <(curl -s curl https://raw.githubusercontent.com/JohnnyBeProgramming/pi-toolkit/master/setup/ssh)
-
-# While we are on the device, lets get the local IP address (write it down for later):
-hostname -I
 ```
 
 ### Remotely control device from your machine
