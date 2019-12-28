@@ -20,22 +20,22 @@ To save time and effort by not having to type endless commands into a terminal,
 we can make use of statically hosted scripts that are included in this repo.
 
 ```bash
-export REPO_URL="https://raw.githubusercontent.com/JohnnyBeProgramming/pi-toolkit/master
+export REPO_URL=https://raw.githubusercontent.com/JohnnyBeProgramming/pi-toolkit/master
 
 # Install applications & tools from remote scripts...
-curl "${REPO_URL}/setup/ssh" | bash
-curl "${REPO_URL}/setup/transmission" | bash
+curl ${REPO_URL}/setup/ssh | bash
+curl ${REPO_URL}/setup/transmission | bash
 
 # Make a backup of a remote device
-curl "${REPO_URL}/remote/backup" | bash
+curl ${REPO_URL}/remote/backup | bash
 
-export TARGET_HOST="pi@192.168.1.1"
-export DEVICE_PATH="/home/pi"
-export LOCAL_PATH="./exported"
+export TARGET_HOST=pi@192.168.1.1
+export DEVICE_PATH=/home/pi
+export LOCAL_PATH=./exported
 
 # Sync files to and from a device
-curl "${REPO_URL}/remote/sync-from" | bash -s ${TARGET_HOST} ${DEVICE_PATH} ${LOCAL_PATH}
-curl "${REPO_URL}/remote/sync-to"   | bash -s ${TARGET_HOST} ${DEVICE_PATH} ${LOCAL_PATH}
+curl ${REPO_URL}/remote/sync-from | bash -s ${TARGET_HOST} ${DEVICE_PATH} ${LOCAL_PATH}
+curl ${REPO_URL}/remote/sync-to   | bash -s ${TARGET_HOST} ${DEVICE_PATH} ${LOCAL_PATH}
 
 ```
 
