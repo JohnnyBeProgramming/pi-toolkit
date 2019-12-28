@@ -19,23 +19,23 @@ The following quickstart guides will help you to get going.
 To save time and effort by not having to type endless commands into a terminal,
 we can make use of statically hosted scripts that are included in this repo.
 
-```
-export REPO_URL=https://raw.githubusercontent.com/JohnnyBeProgramming/pi-toolkit/master
+```bash
+export REPO_URL="https://raw.githubusercontent.com/JohnnyBeProgramming/pi-toolkit/master
 
 # Install applications & tools from remote scripts...
-curl ${REPO_URL}/setup/ssh | bash
-curl ${REPO_URL}/setup/transmission | bash
+curl "${REPO_URL}/setup/ssh" | bash
+curl "${REPO_URL}/setup/transmission" | bash
 
 # Make a backup of a remote device
-curl ${REPO_URL}/remote/backup | bash
+curl "${REPO_URL}/remote/backup" | bash
 
-export TARGET_HOST=pi@192.168.1.1
-export DEVICE_PATH=/home/pi
-export LOCAL_PATH=./exported
+export TARGET_HOST="pi@192.168.1.1"
+export DEVICE_PATH="/home/pi"
+export LOCAL_PATH="./exported"
 
 # Sync files to and from a device
-curl ${REPO_URL}/remote/sync-from | bash -s ${TARGET_HOST} ${DEVICE_PATH} ${LOCAL_PATH}
-curl ${REPO_URL}/remote/sync-to   | bash -s ${TARGET_HOST} ${DEVICE_PATH} ${LOCAL_PATH}
+curl "${REPO_URL}/remote/sync-from" | bash -s ${TARGET_HOST} ${DEVICE_PATH} ${LOCAL_PATH}
+curl "${REPO_URL}/remote/sync-to"   | bash -s ${TARGET_HOST} ${DEVICE_PATH} ${LOCAL_PATH}
 
 ```
 
@@ -46,14 +46,14 @@ backup and restore, or even remote development (using `vscode`).
 
 Run the following command to install ssh (requires an active internet connection):
 
-```
+```bash
 # Exposes an ssh server on the device
 curl -s curl https://raw.githubusercontent.com/JohnnyBeProgramming/pi-toolkit/master/setup/ssh | bash
 ```
 
 Now you can connect to the remote device using your device username and the `ssh` command:
 
-```
+```bash
 # Test the connection from your host to the remote device
 # Hint: Use the IP that was resolved in the step above
 
@@ -71,7 +71,7 @@ install the required features, and set up any other funtionality we need.
 To do this, we will make use of the SSH connection that we installed and enabled
 on the device.
 
-```
+```bash
 # Checkout this repo on your local machine
 git clone https://github.com/JohnnyBeProgramming/pi-toolkit.git
 cd pi-toolkit
