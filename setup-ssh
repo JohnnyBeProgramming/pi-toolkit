@@ -1,0 +1,13 @@
+#!/bin/bash
+# -----------------------------------------------------------------------------
+set -euo pipefail # Stop running the script on first error...
+# -----------------------------------------------------------------------------
+# Enables remote SSH access to the rasberry pi device
+# See also: https://www.raspberrypi.org/documentation/remote-access/ssh/
+
+sudo systemctl enable ssh
+sudo systemctl start ssh
+
+# On a VM, you need to set your network to be able to ssh into the VM
+# 1) VirtualBox, go to Settings -> Network -> on Adapter 1 choose Host-only adapter->click OK.
+# 2) Inside VM, run the command `hostname -I | cut -d ' ' -f1`

@@ -1,0 +1,39 @@
+#!/bin/bash
+# -----------------------------------------------------------------------------
+set -euo pipefail # Stop running the script on first error...
+# -----------------------------------------------------------------------------
+remote_addr="pi@192.168.1.61"
+remote_path="/home/pi/.pi-toolkit"
+
+# Create a zip archive of the payload to send to remote
+zip_file="payload.tar.gz"
+tar -czvf ${zip_file} --exclude=${zip_file} .
+
+echo "----------------------------------------------------------------------------"
+echo "Attempting to connect and copy a local folder to remote..."
+echo " - Source: $(pwd)"
+echo " - Target: ${remote_path}"
+echo "----------------------------------------------------------------------------"
+
+
+# Promt the user for the remote host's user and address
+read -p "Target Hostname (default: ${remote_addr}): " hostname
+if [ -z hostname ]
+then
+    remote_addr=${hostname}
+fi
+
+# Execute the remote shell commands (with the payload)
+ssh ${remote_addr} "
+# Stream our local file into the remote folder
+cat - > /tmp/${zip_file}; 
+mkdir -p ${remote_path};
+tar -czf /tmp/${zip_file} ${remote_path}; 
+rm /tmp/${zip_file};
+
+# Execute the remote commands...
+ls -la ${remote_path}
+
+" < ${zip_file}
+exit 0;
+

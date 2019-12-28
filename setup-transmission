@@ -1,0 +1,45 @@
+#!/bin/bash
+# -----------------------------------------------------------------------------
+set -euo pipefail # Stop running the script on first error...
+# -----------------------------------------------------------------------------
+# Sets up a torrent server: https://pimylifeup.com/raspberry-pi-transmission/
+
+# Update if at least a week old
+[ -z "$(find -H /var/lib/apt/lists -maxdepth 0 -mtime -7)" ] \
+    && sudo apt update \
+    && sudo apt upgrade
+
+# Install the transmission deamon (if not already installed)
+dpkg -s transmission-daemon > /dev/null \
+    || sudo apt install transmission-daemon
+
+# Stop the service so we can edit the settings
+sudo systemctl stop transmission-daemon
+
+# Make sure you give access permissions...
+# sudo chown -R pi:pi /media/NASHDD1/_completed/
+# sudo chown -R pi:pi /media/NASHDD1/_incoming/
+
+# Edit your configuration
+sudo nano /etc/transmission-daemon/settings.json
+
+# Make sure that we use the pi user
+sudo sed -i s/USER=.*/USER=pi/i /etc/init.d/transmission-daemon
+sudo sed -i s/User=.*/User=pi/i /etc/systemd/system/multi-user.target.wants/transmission-daemon.service
+sudo chown -R pi:pi /etc/transmission-daemon
+
+# Reload the service configuration files
+sudo systemctl daemon-reload
+
+# Create a link to the settings file in the user's home folder
+sudo mkdir -p /home/pi/.config/transmission-daemon/
+[ ! -f /etc/transmission-daemon/settings.json ] \
+    && sudo ln -s /etc/transmission-daemon/settings.json /home/pi/.config/transmission-daemon/
+sudo chown -R pi:pi /home/pi/.config/transmission-daemon/
+
+# Now finally we can start the server back up again
+sudo systemctl start transmission-daemon
+
+# Display to the user the website URL
+echo "Server started on:"
+echo " -> http://$(hostname -I | cut -d ' ' -f1):9091/"
