@@ -6,9 +6,9 @@ A set of scripts and tooling to remotely setup and control Rasberry Pi's.
 
 The tooling and functionality included in this repository:
 
-- ./setup - Scripts used to install various pieces of software
-- ./remote - Some utility scripts to remotely control a device through ssh
-- ./backups - Backups will be stored here by default
+- [./setup](./setup) - Scripts used to install various pieces of software
+- [./remote](./remote) - Some utility scripts to remotely control a device through ssh
+- [./backups](./backups) - Backups will be stored here by default
 
 ## Quickstart
 
@@ -32,7 +32,7 @@ curl ${GITHUB_URL}/setup/transmission | bash
 # Make a backup of a remote device
 curl ${GITHUB_URL}/remote/backup | bash
 
-# Sync file to and from a device
+# Sync files to and from a device
 curl ${GITHUB_URL}/remote/sync-from | bash -s ${TARGET_HOST} ${DEVICE_PATH} ${LOCAL_PATH}
 curl ${GITHUB_URL}/remote/sync-to   | bash -s ${TARGET_HOST} ${DEVICE_PATH} ${LOCAL_PATH}
 
@@ -41,15 +41,15 @@ curl ${GITHUB_URL}/remote/sync-to   | bash -s ${TARGET_HOST} ${DEVICE_PATH} ${LO
 ### Setup an SSH agent on the Rasberry Pi
 
 This enables us to remotely control the device, and perform actions such as
-backup and restore. Note that this will require an active internet connection.
+backup and restore, or even remote development (using `vscode`). 
 
-Run the following command to install ssh:
+Run the following command to install ssh (requires an active internet connection):
 ```
 # Exposes an ssh server on the device
-bash <(curl -s curl https://raw.githubusercontent.com/JohnnyBeProgramming/pi-toolkit/master/setup/ssh)
+curl -s curl https://raw.githubusercontent.com/JohnnyBeProgramming/pi-toolkit/master/setup/ssh | bash
 ```
 
-### Remotely control device from your machine
+### Remotely control a device from your local machine
 
 To do this, we will make use of the SSH connection that we installed and enabled
 on the device.
