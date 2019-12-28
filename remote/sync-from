@@ -1,0 +1,35 @@
+#!/bin/bash
+# -----------------------------------------------------------------------------
+set -euo pipefail # Stop running the script on first error...
+# -----------------------------------------------------------------------------
+remote_addr=${1:-"pi@127.0.0.1"}
+remote_path=${2:-"/home/pi/"}
+
+# Promt the user for the remote host's user and address
+[ -z remote_addr ] && read -p "Target Hostname (default: ${remote_addr}): " hostname
+if [ -z hostname ]
+then
+    remote_addr=${hostname}
+fi
+
+# Create the local folder where we will copy the output
+device_path=${3:-"./devices/${remote_addr}${remote_path}"}
+mkdir -p ${device_path}
+
+# Execute the remote shell commands (with the payload)
+ssh ${remote_addr} "
+# Backup all the essential files and folders...
+tar -czf - \
+    --exclude=/tmp \
+    --exclude=/proc \
+    --exclude=/lost+found \
+    --exclude=/sys \
+    --exclude=/mnt \
+    --exclude=/media \
+    --exclude=/var/logs \
+    --exclude=/var/cache \
+    --exclude=/dev \
+    --exclude=/root \
+    --exclude=/share/Archive \
+    -C ${remote_path} .
+" | tar -xzvf - -C ${device_path}

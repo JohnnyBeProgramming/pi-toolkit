@@ -1,0 +1,33 @@
+#!/bin/bash
+# -----------------------------------------------------------------------------
+set -euo pipefail # Stop running the script on first error...
+# -----------------------------------------------------------------------------
+remote_addr=${1:-"pi@127.0.0.1"}
+remote_path=${2:-"/home/pi/.pi-toolkit"}
+device_path=${3:-"."}
+
+echo "----------------------------------------------------------------------------"
+echo "Attempting to connect and copy a local folder to remote..."
+echo " - Source: ${device_path}"
+echo " - Target: ${remote_path}"
+echo "----------------------------------------------------------------------------"
+
+
+# Promt the user for the remote host's user and address
+[ -z remote_addr ] && read -p "Target Hostname (default: ${remote_addr}): " hostname
+if [ -z hostname ]
+then
+    remote_addr=${hostname}
+fi
+
+# Create a zip archive of the target and stream to target
+tar -czf - \
+    --exclude=.git* \
+    --exclude=devices \
+    --exclude=backups \
+    -C ${device_path} . \
+  | ssh ${remote_addr} "
+echo 'Streaming local files to: ${remote_path}'
+mkdir -p ${remote_path}
+cat - | tar --warning=no-unknown-keyword -xzmvf - -C ${remote_path}
+"
