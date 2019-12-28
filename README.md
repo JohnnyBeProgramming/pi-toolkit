@@ -21,9 +21,6 @@ we can make use of statically hosted scripts that are included in this repo.
 
 ```
 export GITHUB_URL=https://raw.githubusercontent.com/JohnnyBeProgramming/pi-toolkit/master
-export TARGET_HOST=pi@192.168.1.1
-export DEVICE_PATH=/home/pi
-export LOCAL_PATH=./exported
 
 # Install applications & tools from remote scripts...
 curl ${GITHUB_URL}/setup/ssh | bash
@@ -31,6 +28,10 @@ curl ${GITHUB_URL}/setup/transmission | bash
 
 # Make a backup of a remote device
 curl ${GITHUB_URL}/remote/backup | bash
+
+export TARGET_HOST=pi@192.168.1.1
+export DEVICE_PATH=/home/pi
+export LOCAL_PATH=./exported
 
 # Sync files to and from a device
 curl ${GITHUB_URL}/remote/sync-from | bash -s ${TARGET_HOST} ${DEVICE_PATH} ${LOCAL_PATH}
@@ -41,18 +42,16 @@ curl ${GITHUB_URL}/remote/sync-to   | bash -s ${TARGET_HOST} ${DEVICE_PATH} ${LO
 ### Setup an SSH agent on the Rasberry Pi
 
 This enables us to remotely control the device, and perform actions such as
-backup and restore, or even remote development (using `vscode`). 
+backup and restore, or even remote development (using `vscode`).
 
 Run the following command to install ssh (requires an active internet connection):
+
 ```
 # Exposes an ssh server on the device
 curl -s curl https://raw.githubusercontent.com/JohnnyBeProgramming/pi-toolkit/master/setup/ssh | bash
 ```
 
-### Remotely control a device from your local machine
-
-To do this, we will make use of the SSH connection that we installed and enabled
-on the device.
+Now you can connect to the remote device using your device username and the `ssh` command:
 
 ```
 # Test the connection from your host to the remote device
@@ -64,8 +63,13 @@ ssh <user>@<device-ip-addr>
 exit # Type 'exit' to terminate the ssh session...
 ```
 
-Now that we established a connection, the next step would be to try and remotely 
+Now that we established a connection, the next step would be to try and remotely
 install the required features, and set up any other funtionality we need.
+
+### Remotely control a device from your local machine
+
+To do this, we will make use of the SSH connection that we installed and enabled
+on the device.
 
 ```
 # Checkout this repo on your local machine
