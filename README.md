@@ -20,22 +20,22 @@ To save time and effort by not having to type endless commands into a terminal,
 we can make use of statically hosted scripts that are included in this repo.
 
 ```bash
+# ------------------------------------------------------------------
+# From the Rasberry Pi
+# ------------------------------------------------------------------
 export REPO_URL=https://raw.githubusercontent.com/JohnnyBeProgramming/pi-toolkit/master
 
 # Install applications & tools from remote scripts...
 curl ${REPO_URL}/setup/ssh | bash
 curl ${REPO_URL}/setup/transmission | bash
 
-# Make a backup of a remote device
-curl ${REPO_URL}/remote/backup | bash
-
+# ------------------------------------------------------------------
+# From your local machine
+# ------------------------------------------------------------------
 export TARGET_HOST=pi@192.168.1.1
-export DEVICE_PATH=/home/pi
-export LOCAL_PATH=./exported
 
-# Sync files to and from a device
-curl ${REPO_URL}/remote/sync-from | bash -s ${TARGET_HOST} ${DEVICE_PATH} ${LOCAL_PATH}
-curl ${REPO_URL}/remote/sync-to   | bash -s ${TARGET_HOST} ${DEVICE_PATH} ${LOCAL_PATH}
+# Make a backup of a remote device
+curl ${REPO_URL}/remote/backup | bash -s ${TARGET_HOST}
 
 ```
 
@@ -69,25 +69,16 @@ the device from our local machine.
 ### Synchronise files to and from your remote device
 
 To do this, we will make use of the SSH connection that we installed and enabled
-on the device, but first make sure you have a copy of this repo checked out locally.
+on the device.
 
 ```bash
 export TARGET_HOST=pi@192.168.1.1
+export DEVICE_PATH=/home/pi
+export LOCAL_PATH=./exported
 
-# Checkout this repo on your local machine
-git clone https://github.com/JohnnyBeProgramming/pi-toolkit.git
-cd pi-toolkit
-
-# Sync files to the target device (ignores the `./backup` folder)
-# Defaults to `$PWD` -> `/home/pi/`
-./remote/sync-to ${TARGET_HOST}
-
-# Sync files from the remote device to a local folder
-# Defaults to `/home/pi/` -> `./devices/pi@<your-device-ip>/home/pi/`
-./remote/sync-from ${TARGET_HOST}
-
-# Make a backup of the target device
-./remote/backup
+# Sync files to and from a device
+./remote/sync-from ${TARGET_HOST} ${DEVICE_PATH} ${LOCAL_PATH}
+./remote/sync-to   ${TARGET_HOST} ${DEVICE_PATH} ${LOCAL_PATH}
 
 ```
 
