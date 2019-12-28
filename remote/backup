@@ -1,0 +1,32 @@
+#!/bin/bash
+# -----------------------------------------------------------------------------
+set -euo pipefail # Stop running the script on first error...
+# -----------------------------------------------------------------------------
+remote_addr=${remote_addr:-"pi@127.0.0.1"}
+remote_path=${remote_path:-"/home/pi/.pi-toolkit"}
+
+# Promt the user for the remote host's user and address
+read -p "Target Hostname (default: ${remote_addr}): " hostname
+if [ -z hostname ]
+then
+    remote_addr=${hostname}
+fi
+
+# Execute the remote shell commands (with the payload)
+zip_file="${remote_addr}.tar.gz"
+ssh ${remote_addr} "
+# Backup all the essential files and folders...
+tar -czf - \
+    --exclude=/tmp \
+    --exclude=/proc \
+    --exclude=/lost+found \
+    --exclude=/sys \
+    --exclude=/mnt \
+    --exclude=/media \
+    --exclude=/var/logs \
+    --exclude=/var/cache \
+    --exclude=/dev \
+    --exclude=/root \
+    --exclude=/share/Archive \
+    ./
+" > backups/${zip_file}

@@ -2,12 +2,16 @@
 # -----------------------------------------------------------------------------
 set -euo pipefail # Stop running the script on first error...
 # -----------------------------------------------------------------------------
-remote_addr="pi@192.168.1.61"
-remote_path="/home/pi/.pi-toolkit"
+remote_addr=${remote_addr:-"pi@127.0.0.1"}
+remote_path=${remote_path:-"/home/pi/.pi-toolkit"}
 
 # Create a zip archive of the payload to send to remote
-zip_file="payload.tar.gz"
-tar -czvf ${zip_file} --exclude=${zip_file} .
+zip_file="$(hostname).tar.gz"
+tar -czf backups/${zip_file} \
+    --exclude=${zip_file} \
+    --exclude=backups \
+    --exclude=remote \
+    ./
 
 echo "----------------------------------------------------------------------------"
 echo "Attempting to connect and copy a local folder to remote..."
@@ -26,14 +30,11 @@ fi
 # Execute the remote shell commands (with the payload)
 ssh ${remote_addr} "
 # Stream our local file into the remote folder
-cat - > /tmp/${zip_file}; 
-mkdir -p ${remote_path};
-tar -czf /tmp/${zip_file} ${remote_path}; 
+cat - > /tmp/${zip_file}; mkdir -p ${remote_path};
+tar --warning=no-unknown-keyword -xzf /tmp/${zip_file} -C ${remote_path}; 
 rm /tmp/${zip_file};
 
 # Execute the remote commands...
 ls -la ${remote_path}
 
-" < ${zip_file}
-exit 0;
-
+" < backups/${zip_file}
