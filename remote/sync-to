@@ -2,32 +2,51 @@
 # -----------------------------------------------------------------------------
 set -euo pipefail # Stop running the script on first error...
 # -----------------------------------------------------------------------------
-remote_addr=${1:-"pi@127.0.0.1"}
+default_url="pi@127.0.0.1"
+remote_addr=${1:-}
 remote_path=${2:-"/home/pi/.pi-toolkit"}
-device_path=${3:-"."}
+local_path=${3:-"."}
 
-echo "----------------------------------------------------------------------------"
-echo "Attempting to connect and copy a local folder to remote..."
-echo " - Source: ${device_path}"
-echo " - Target: ${remote_path}"
-echo "----------------------------------------------------------------------------"
+BOLD="\e[1m"
+DEBUG="\e[90m"
+RED="\e[31m"
+GREEN="\e[32m"
+BLUE="\e[34m"
+YELLOW="\e[33m"
+NONE="\e[0m"
+WHITE="\e[97m"
+UNDERLINE="\e[4m"
+BRIGHT="\e[1m"
+ARGS="\e[95m"
+LINK="${UNDERLINE}${BLUE}${BRIGHT}"
+TITLE="\n${UNDERLINE}${WHITE}${BRIGHT}${BOLD}"
+WARN="${BRIGHT}${BOLD}${YELLOW}"
 
+printf "${TITLE}Attempting to connect and copy a local folder to remote...${NONE}\n"
 
 # Promt the user for the remote host's user and address
-[ -z remote_addr ] && read -p "Target Hostname (default: ${remote_addr}): " hostname
-if [ -z hostname ]
+[ "${remote_addr:-}" == "" ] && printf "\
+${WARN} - Specify Hostname${NONE} (default: ${LINK}${default_url}${NONE})
+${BOLD} - Target Hostname${NONE}: ${BRIGHT}${BLUE}\
+" && read -p "" remote_addr && printf "${NONE}";
+if [ "${remote_addr:-}" == "" ]
 then
-    remote_addr=${hostname}
+    remote_addr=${default_url}
 fi
 
 # Create a zip archive of the target and stream to target
+printf "\
+ - Source: ${BOLD}${ARGS}$(cd "$(dirname "${local_path}")"; pwd -P)${NONE}
+ - Target: ${BOLD}${ARGS}${remote_path}${NONE} ${DEBUG}(remote device)${NONE}
+${DEBUG}"
 tar -czf - \
     --exclude=.git* \
     --exclude=devices \
     --exclude=backups \
-    -C ${device_path} . \
+    -C ${local_path} . \
   | ssh ${remote_addr} "
-echo 'Streaming local files to: ${remote_path}'
 mkdir -p ${remote_path}
+printf '${TITLE}Streaming local files to: ${ARGS}${remote_path}${WHITE} ${NONE}${DEBUG}\n'
 cat - | tar --warning=no-unknown-keyword -xzmvf - -C ${remote_path}
 "
+printf "${NONE}"

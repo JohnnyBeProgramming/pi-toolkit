@@ -2,7 +2,6 @@
 # -----------------------------------------------------------------------------
 set -euo pipefail # Stop running the script on first error...
 # -----------------------------------------------------------------------------
-# Sets up a torrent server: https://pimylifeup.com/raspberry-pi-transmission/
 
 # Update if not updated in the last week
 [ -z "$(find -H /var/lib/apt/lists -maxdepth 0 -mtime -7)" ] \

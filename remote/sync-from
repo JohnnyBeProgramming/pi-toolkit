@@ -2,19 +2,46 @@
 # -----------------------------------------------------------------------------
 set -euo pipefail # Stop running the script on first error...
 # -----------------------------------------------------------------------------
-remote_addr=${1:-"pi@127.0.0.1"}
+default_url="pi@127.0.0.1"
+remote_addr=${1:-}
 remote_path=${2:-"/home/pi/"}
 
+BOLD="\e[1m"
+DEBUG="\e[90m"
+RED="\e[31m"
+GREEN="\e[32m"
+BLUE="\e[34m"
+YELLOW="\e[33m"
+NONE="\e[0m"
+WHITE="\e[97m"
+UNDERLINE="\e[4m"
+BRIGHT="\e[1m"
+ARGS="\e[95m"
+LINK="${UNDERLINE}${BLUE}${BRIGHT}"
+TITLE="\n${UNDERLINE}${WHITE}${BRIGHT}${BOLD}"
+WARN="${BRIGHT}${BOLD}${YELLOW}"
+
+printf "${TITLE}Attempting to connect and copy remote files to a local folder...${NONE}\n"
+
 # Promt the user for the remote host's user and address
-[ -z remote_addr ] && read -p "Target Hostname (default: ${remote_addr}): " hostname
-if [ -z hostname ]
+[ "${remote_addr:-}" == "" ] && printf "\
+${WARN} - Specify Hostname${NONE} (default: ${LINK}${default_url}${NONE})
+${BOLD} - Target Hostname${NONE}: ${BRIGHT}${BLUE}\
+" && read -p "" remote_addr && printf "${NONE}";
+if [ "${remote_addr:-}" == "" ]
 then
-    remote_addr=${hostname}
+    remote_addr=${default_url}
 fi
 
 # Create the local folder where we will copy the output
-device_path=${3:-"./devices/${remote_addr}${remote_path}"}
-mkdir -p ${device_path}
+local_path=${3:-"./devices/${remote_addr}${remote_path}"}
+mkdir -p ${local_path}
+
+printf "\
+ - Source: ${BOLD}${ARGS}${remote_path}${NONE} ${DEBUG}(remote device)${NONE}
+ - Target: ${BOLD}${ARGS}$(cd "$(dirname "${local_path}")"; pwd -P)${NONE}
+${DEBUG}
+"
 
 # Execute the remote shell commands (with the payload)
 ssh ${remote_addr} "
@@ -32,4 +59,5 @@ tar -czf - \
     --exclude=/root \
     --exclude=/share/Archive \
     -C ${remote_path} .
-" | tar -xzvf - -C ${device_path}
+" | tar -xzvf - -C ${local_path}
+printf "${NONE}"
