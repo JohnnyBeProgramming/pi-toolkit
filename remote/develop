@@ -1,0 +1,9 @@
+#!/bin/bash
+# -----------------------------------------------------------------------------
+set -euo pipefail # Stop running the script on first error...
+# -----------------------------------------------------------------------------
+remote_addr=${1:-"pi@127.0.0.1"}
+remote_path=${2:-"/home/pi/"}
+
+# Open the remote folder in VS Code remote ssh
+code --remote ssh-remote+${remote_addr} ${remote_path}
