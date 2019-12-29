@@ -11,9 +11,11 @@ sudo systemctl start ssh
 # -----------------------------------------------------------------------------
 # While we are on the device, lets get the local SSH address (note it down for later):
 # -----------------------------------------------------------------------------
+HOST=$(hostname -I | cut -d ' ' -f1)
 BOLD="\e[1m"
 NONE="\e[0m"
 WHITE="\e[97m"
+SILVER="\e[37m"
 BRIGHT="\e[1m"
 BLUE="\e[34m"
 YELLOW="\e[33m"
@@ -31,6 +33,9 @@ In VirtualBox, go to:
 -> OK ${NONE}
 
 ${TITLE}You can connect with a remote SSH agent to this device at:${NONE}\n
-${DEBUG} -> ${WHITE}ssh ${LINK}${USER}@$(hostname -I | cut -d ' ' -f1)${NONE} \
-${DEBUG}[ ${ARGS}<command>${DEBUG} ] ${NONE}\n
+${DEBUG} -> ${SILVER}ssh ${LINK}${USER}@${HOST}${NONE} ${DEBUG}[ ${ARGS}<command>${DEBUG} ] ${NONE}
+
+${DEBUG}  # Alternatively, open a remote vscode development environment on the device
+${DEBUG} -> ${SILVER}code --remote ssh-remote+${LINK}${USER}@${HOST}${NONE} ${BOLD}${ARGS}/home/pi/${NONE}
+
 "
