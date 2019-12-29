@@ -2,51 +2,75 @@
 # -----------------------------------------------------------------------------
 set -euo pipefail # Stop running the script on first error...
 # -----------------------------------------------------------------------------
-default_url="pi@127.0.0.1"
-remote_addr=${1:-}
-remote_path=${2:-"/home/pi/.pi-toolkit"}
-local_path=${3:-"."}
+DEFAULT_SSH="pi@127.0.0.1"
 
-BOLD="\e[1m"
-DEBUG="\e[90m"
-RED="\e[31m"
-GREEN="\e[32m"
-BLUE="\e[34m"
-YELLOW="\e[33m"
-NONE="\e[0m"
-WHITE="\e[97m"
-UNDERLINE="\e[4m"
-BRIGHT="\e[1m"
-ARGS="\e[95m"
-LINK="${UNDERLINE}${BLUE}${BRIGHT}"
-TITLE="\n${UNDERLINE}${WHITE}${BRIGHT}${BOLD}"
-WARN="${BRIGHT}${BOLD}${YELLOW}"
+function parse_args {  
+  remote_addr=${1:-}
+  remote_path=${2:-"/home/pi/.pi-toolkit"}
+  local_path=${3:-"."}
 
-printf "${TITLE}Attempting to connect and copy a local folder to remote...${NONE}\n"
+  # Promt for the remote hostname (if not specified)
+  [ "${remote_addr:-}" == "" ] && prompt_hostname || true
+}
 
-# Promt the user for the remote host's user and address
-[ "${remote_addr:-}" == "" ] && printf "\
-${WARN} - Specify Hostname${NONE} (default: ${LINK}${default_url}${NONE})
-${BOLD} - Target Hostname${NONE}: ${BRIGHT}${BLUE}\
-" && read -p "" remote_addr && printf "${NONE}";
-if [ "${remote_addr:-}" == "" ]
-then
-    remote_addr=${default_url}
-fi
+function start {
+  define_colors
+  parse_args "$@"
 
-# Create a zip archive of the target and stream to target
-printf "\
- - Source: ${BOLD}${ARGS}$(cd "$(dirname "${local_path}")"; pwd -P)${NONE}
- - Target: ${BOLD}${ARGS}${remote_path}${NONE} ${DEBUG}(remote device)${NONE}
-${DEBUG}"
-tar -czf - \
-    --exclude=.git* \
-    --exclude=devices \
-    --exclude=backups \
-    -C ${local_path} . \
-  | ssh ${remote_addr} "
-mkdir -p ${remote_path}
-printf '${TITLE}Streaming local files to: ${ARGS}${remote_path}${WHITE} ${NONE}${DEBUG}\n'
-cat - | tar --warning=no-unknown-keyword -xzmvf - -C ${remote_path}
-"
-printf "${NONE}"
+  printf "${TITLE}Attempting to connect and copy a local folder to remote...${NONE}\n"
+  printf " - Source: ${VALUE}$(cd "$(dirname "${local_path}")"; pwd -P)${NONE}\n"
+  printf " - Target: ${VALUE}${remote_path}${NONE} ${DEBUG}(remote device)${NONE}\n"
+  printf "${DEBUG}\n"
+
+  # Create a zip archive of the sources and stream to target folder
+  tar -czf - \
+      --exclude=.git* \
+      --exclude=devices \
+      --exclude=backups \
+      -C ${local_path} . \
+    | ssh ${remote_addr} "
+  mkdir -p ${remote_path}
+  printf '${TITLE}Streaming local files to: ${ARGS}${remote_path}${WHITE} ${NONE}${DEBUG}\n'
+  cat - | tar --warning=no-unknown-keyword -xzmvf - -C ${remote_path}
+  "
+}
+
+function prompt_hostname {
+  printf "${TITLE}Requires target ${WARN}user@host-or-ip${WHITE} for remote device${NONE}\n"
+  printf " - ${NONE}Defaults: ${LINK}${DEFAULT_SSH}${NONE}\n"
+  printf " - ${BOLD}Hostname: ${BRIGHT}${BLUE}"
+  read -p "" remote_addr
+  printf "${NONE}"
+  if [ "${remote_addr:-}" == "" ]
+  then
+      remote_addr=${DEFAULT_SSH}
+  fi
+}
+
+function define_colors {
+  BOLD="\e[1m"
+  DEBUG="\e[90m"
+  RED="\e[31m"
+  GREEN="\e[32m"
+  BLUE="\e[34m"
+  YELLOW="\e[33m"
+  NONE="\e[0m"
+  WHITE="\e[97m"
+  UNDERLINE="\e[4m"
+  BRIGHT="\e[1m"
+  MAGENTA="\e[95m"
+  CYAN="\e[96m"
+  ARGS="${MAGENTA}"
+  VALUE="${UNDERLINE}${CYAN}"
+  LINK="${UNDERLINE}${BLUE}${BRIGHT}"
+  TITLE="\n${UNDERLINE}${WHITE}${BRIGHT}${BOLD}"
+  WARN="${BRIGHT}${BOLD}${YELLOW}"
+}
+
+function cleanup {
+  printf "${NONE}" # Reset terminal colors
+}
+
+# Bootstrap the app after setting the cleanup post processor
+trap cleanup EXIT
+start "$@" 

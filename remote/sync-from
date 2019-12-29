@@ -2,62 +2,83 @@
 # -----------------------------------------------------------------------------
 set -euo pipefail # Stop running the script on first error...
 # -----------------------------------------------------------------------------
-default_url="pi@127.0.0.1"
-remote_addr=${1:-}
-remote_path=${2:-"/home/pi/"}
+DEFAULT_SSH="pi@127.0.0.1"
 
-BOLD="\e[1m"
-DEBUG="\e[90m"
-RED="\e[31m"
-GREEN="\e[32m"
-BLUE="\e[34m"
-YELLOW="\e[33m"
-NONE="\e[0m"
-WHITE="\e[97m"
-UNDERLINE="\e[4m"
-BRIGHT="\e[1m"
-ARGS="\e[95m"
-LINK="${UNDERLINE}${BLUE}${BRIGHT}"
-TITLE="\n${UNDERLINE}${WHITE}${BRIGHT}${BOLD}"
-WARN="${BRIGHT}${BOLD}${YELLOW}"
+function parse_args {  
+  remote_addr=${1:-}
+  remote_path=${2:-"/home/pi/"}
+    
+  # Promt for the remote hostname (if not specified)
+  [ "${remote_addr:-}" == "" ] && prompt_hostname || true
+  
+  local_path=${3:-"./devices/${remote_addr}${remote_path}"}
+  mkdir -p ${local_path}
+}
 
-printf "${TITLE}Attempting to connect and copy remote files to a local folder...${NONE}\n"
+function start {
+  define_colors
+  parse_args "$@"
 
-# Promt the user for the remote host's user and address
-[ "${remote_addr:-}" == "" ] && printf "\
-${WARN} - Specify Hostname${NONE} (default: ${LINK}${default_url}${NONE})
-${BOLD} - Target Hostname${NONE}: ${BRIGHT}${BLUE}\
-" && read -p "" remote_addr && printf "${NONE}";
-if [ "${remote_addr:-}" == "" ]
-then
-    remote_addr=${default_url}
-fi
+  printf "${TITLE}Attempting to connect and copy remote files to a local folder...${NONE}\n"  
+  printf " - Source: ${VALUE}${remote_path}${NONE} ${DEBUG}(remote device)${NONE}\n"
+  printf " - Target: ${VALUE}$(cd "$(dirname "${local_path}")"; pwd -P)${NONE}\n"
+  printf "${DEBUG}\n"
 
-# Create the local folder where we will copy the output
-local_path=${3:-"./devices/${remote_addr}${remote_path}"}
-mkdir -p ${local_path}
+  # Execute the remote shell commands (with the payload)
+  ssh ${remote_addr} "
+  # Backup all the essential files and folders...
+  tar -czf - \
+      --exclude=/tmp \
+      --exclude=/proc \
+      --exclude=/lost+found \
+      --exclude=/sys \
+      --exclude=/mnt \
+      --exclude=/media \
+      --exclude=/var/logs \
+      --exclude=/var/cache \
+      --exclude=/dev \
+      --exclude=/root \
+      --exclude=/share/Archive \
+      -C ${remote_path} .
+  " | tar -xzvf - -C ${local_path}
+}
 
-printf "\
- - Source: ${BOLD}${ARGS}${remote_path}${NONE} ${DEBUG}(remote device)${NONE}
- - Target: ${BOLD}${ARGS}$(cd "$(dirname "${local_path}")"; pwd -P)${NONE}
-${DEBUG}
-"
+function prompt_hostname {
+  printf "${TITLE}Requires target ${WARN}user@host-or-ip${WHITE} for remote device${NONE}\n"
+  printf " - ${NONE}Defaults: ${LINK}${DEFAULT_SSH}${NONE}\n"
+  printf " - ${BOLD}Hostname: ${BRIGHT}${BLUE}"
+  read -p "" remote_addr
+  printf "${NONE}"
+  if [ "${remote_addr:-}" == "" ]
+  then
+      remote_addr=${DEFAULT_SSH}
+  fi
+}
 
-# Execute the remote shell commands (with the payload)
-ssh ${remote_addr} "
-# Backup all the essential files and folders...
-tar -czf - \
-    --exclude=/tmp \
-    --exclude=/proc \
-    --exclude=/lost+found \
-    --exclude=/sys \
-    --exclude=/mnt \
-    --exclude=/media \
-    --exclude=/var/logs \
-    --exclude=/var/cache \
-    --exclude=/dev \
-    --exclude=/root \
-    --exclude=/share/Archive \
-    -C ${remote_path} .
-" | tar -xzvf - -C ${local_path}
-printf "${NONE}"
+function define_colors {
+  BOLD="\e[1m"
+  DEBUG="\e[90m"
+  RED="\e[31m"
+  GREEN="\e[32m"
+  BLUE="\e[34m"
+  YELLOW="\e[33m"
+  NONE="\e[0m"
+  WHITE="\e[97m"
+  UNDERLINE="\e[4m"
+  BRIGHT="\e[1m"
+  MAGENTA="\e[95m"
+  CYAN="\e[96m"
+  ARGS="${MAGENTA}"
+  VALUE="${UNDERLINE}${CYAN}"
+  LINK="${UNDERLINE}${BLUE}${BRIGHT}"
+  TITLE="\n${UNDERLINE}${WHITE}${BRIGHT}${BOLD}"
+  WARN="${BRIGHT}${BOLD}${YELLOW}"
+}
+
+function cleanup {
+  printf "${NONE}" # Reset terminal colors
+}
+
+# Bootstrap the app after setting the cleanup post processor
+trap cleanup EXIT
+start "$@" 
