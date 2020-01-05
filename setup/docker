@@ -1,0 +1,18 @@
+#!/bin/bash
+# -----------------------------------------------------------------------------
+set -euo pipefail # Stop running the script on first error...
+# -----------------------------------------------------------------------------
+
+# Update if not updated in the last week
+[ -z "$(find -H /var/lib/apt/lists -maxdepth 0 -mtime -7)" ] \
+    && sudo apt update \
+    && sudo apt upgrade
+
+# Add the required ARM libraries for docker
+echo "deb [arch=armhf] https://download.docker.com/linux/raspbian stretch stable" \
+    | sudo tee /etc/apt/sources.list.d/docker.list
+
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+
+# Install docker on a rasberry pi
+curl -sSL https://get.docker.com/ | sh
