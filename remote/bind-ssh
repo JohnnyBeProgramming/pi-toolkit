@@ -1,0 +1,15 @@
+#!/bin/bash
+# -----------------------------------------------------------------------------
+set -euo pipefail # Stop running the script on first error...
+# -----------------------------------------------------------------------------
+remote_addr=${1:-"pi@127.0.0.1"}
+remote_path=${2:-"/home/pi/"}
+
+# Ensure that we have valid public keys
+if [ ! -f ~/.ssh/id_rsa.pub ] 
+then
+    ssh-keygen
+fi
+
+# Copy the public key to the remote host
+ssh-copy-id ${remote_addr}
