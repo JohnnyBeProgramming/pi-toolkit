@@ -3,121 +3,109 @@
 set -euo pipefail # Stop running the script on first error...
 # -----------------------------------------------------------------------------
 HOST=$(hostname -I | cut -d ' ' -f1)
-BOLD="\e[1m"
-NONE="\e[0m"
-WHITE="\e[97m"
-SILVER="\e[37m"
-BRIGHT="\e[1m"
-RED="\e[31m"
-GREEN="\e[32m"
-BLUE="\e[34m"
-YELLOW="\e[33m"
-DEBUG="\e[90m"
-UNDERLINE="\e[4m"
-ARGS="\e[95m"
-LINK="${UNDERLINE}${BLUE}${BRIGHT}"
-TITLE="\n${UNDERLINE}${WHITE}${BRIGHT}${BOLD}"
-WARN="${BRIGHT}${BOLD}${YELLOW}"
 
-# Update if not updated in the last week...
-[ -z "$(find -H /var/lib/apt/lists -maxdepth 0 -mtime -7)" ] \
-    && printf "${TITLE}Updating package libraries...${NONE}\n${DEBUG}" \
-    && sudo apt update \
-    && sudo apt upgrade; \
-    printf "${NONE}"
+function start {
+  define_colors
 
-# Auto detect the architecture
-printf "${TITLE}Detecting architecture...${NONE}\n";
-MACHINE_MTYPE="$(uname -m)";
-ARCH="${MACHINE_MTYPE}";
-REPO_VENDOR="headmelted";
-if [ "$ARCH" = "amd64" ] || [ "$ARCH" = "i386" ]; then REPO_VENDOR="microsoft"; fi;
-printf "Architecture detected as ${BRIGHT}${ARGS}$ARCH${NONE}...\n";
+  # Update if not updated in the last week...
+  [ -z "$(find -H /var/lib/apt/lists -maxdepth 0 -mtime -7)" ] \
+      && printf "${TITLE}Updating package libraries...${NONE}\n${DEBUG}" \
+      && sudo apt update \
+      && sudo apt upgrade; \
+      printf "${NONE}"
 
-# Ensuring curl is installed...
-dpkg -s curl > /dev/null || ( \
-    printf "${TITLE}Updating package libraries...${NONE}\n${DEBUG}" && \
-    sudo apt-get install -y curl; \
-    printf "${NONE}" \
-)
+  # Auto detect the architecture
+  printf "${TITLE}Detecting architecture...${NONE}\n";
+  MACHINE_MTYPE="$(uname -m)";
+  ARCH="${MACHINE_MTYPE}";
+  REPO_VENDOR="headmelted";
+  if [ "$ARCH" = "amd64" ] || [ "$ARCH" = "i386" ]; then REPO_VENDOR="microsoft"; fi;
+  printf "Architecture detected as ${BRIGHT}${ARGS}$ARCH${NONE}...\n";
 
-# Detect the executable to install
-if [ "${REPO_VENDOR}" = "headmelted" ]; then
-  gpg_key=https://packagecloud.io/headmelted/codebuilds/gpgkey;
-  repo_name="stretch";
-  repo_entry="deb https://packagecloud.io/headmelted/codebuilds/debian/ ${repo_name} main";
-  code_executable_name="code-oss";
-else
-  gpg_key=https://packages.microsoft.com/keys/microsoft.asc;
-  repo_name="stable"
-  repo_entry="deb https://packages.microsoft.com/repos/vscode ${repo_name} main";
-  code_executable_name="code-insiders";
-fi;
+  # Ensuring curl is installed...
+  dpkg -s curl > /dev/null || ( \
+      printf "${TITLE}Updating package libraries...${NONE}\n${DEBUG}" && \
+      sudo apt-get install -y curl; \
+      printf "${NONE}" \
+  )
 
-printf "${TITLE}Retrieving GPG key [${ARGS}${REPO_VENDOR}${WHITE}] (${BLUE}$gpg_key${WHITE})...${NONE}\n${DEBUG}";
-sudo bash -c "curl -L $gpg_key | gpg --dearmor > /etc/apt/trusted.gpg.d/${REPO_VENDOR}_vscode.gpg"
-printf "${NONE}"
+  # Detect the executable to install
+  if [ "${REPO_VENDOR}" = "headmelted" ]; then
+    gpg_key=https://packagecloud.io/headmelted/codebuilds/gpgkey;
+    repo_name="stretch";
+    repo_entry="deb https://packagecloud.io/headmelted/codebuilds/debian/ ${repo_name} main";
+    code_executable_name="code-oss";
+  else
+    gpg_key=https://packages.microsoft.com/keys/microsoft.asc;
+    repo_name="stable"
+    repo_entry="deb https://packages.microsoft.com/repos/vscode ${repo_name} main";
+    code_executable_name="code-insiders";
+  fi;
 
-printf "Removing any previous entry to headmelted repository\n${DEBUG}";
-rm -rf /etc/apt/sources.list.d/headmelted_codebuilds.list;
-rm -rf /etc/apt/sources.list.d/codebuilds.list;
-printf "${NONE}"
-  
-printf "${TITLE}Installing [${ARGS}${REPO_VENDOR}${WHITE}] repository...${NONE}\n${DEBUG}";
-sudo bash -c "echo "${repo_entry}" > /etc/apt/sources.list.d/${REPO_VENDOR}_vscode.list";
-  
-printf "${TITLE}Updating APT cache...${NONE}\n${DEBUG}"
-sudo apt-get update -yq;
-printf "${BRIGHT}Done!${NONE}\n"
+  printf "${TITLE}Retrieving GPG key [${ARGS}${REPO_VENDOR}${WHITE}] (${BLUE}$gpg_key${WHITE})...${NONE}\n${DEBUG}";
+  sudo bash -c "curl -L $gpg_key | gpg --dearmor > /etc/apt/trusted.gpg.d/${REPO_VENDOR}_vscode.gpg"
+  printf "${NONE}"
 
-if [ $? -eq 0 ]; then
-  printf "${BRIGHT}${GREEN}Repository install complete.${NONE}\n";
-else
-  printf "${BRIGHT}${RED}Repository install failed.${NONE}\n";
-  exit 1;
-fi;
+  printf "Removing any previous entry to headmelted repository\n${DEBUG}";
+  rm -rf /etc/apt/sources.list.d/headmelted_codebuilds.list;
+  rm -rf /etc/apt/sources.list.d/codebuilds.list;
+  printf "${NONE}"
+    
+  printf "${TITLE}Installing [${ARGS}${REPO_VENDOR}${WHITE}] repository...${NONE}\n${DEBUG}";
+  sudo bash -c "echo "${repo_entry}" > /etc/apt/sources.list.d/${REPO_VENDOR}_vscode.list";
+    
+  printf "${TITLE}Updating APT cache...${NONE}\n${DEBUG}"
+  sudo apt-get update -yq;
+  printf "${BRIGHT}Done!${NONE}\n"
 
-printf "${TITLE}Installing Visual Studio Code from [${ARGS}${repo_name}${NONE}${WHITE}]...${NONE}\n${DEBUG}";
-# Install required PGP keys and additional repositories (jessie main)
-sudo wget -qO - https://packagecloud.io/headmelted/codebuilds/gpgkey | sudo apt-key add -;
-deb_pkg="https://packagecloud.io/headmelted/codebuilds/raspbian/"
-[ "$(cat /etc/apt/sources.list | grep ${deb_pkg})" ] \
-|| sudo bash -c "echo 'deb ${deb_pkg} jessie main' > /etc/apt/sources.list";
-# Now that the vscode-oss is available, lets install it
-sudo apt-get install -t ${repo_name} -y ${code_executable_name};
-# apt-get install -t ${repo_name} -y --allow-unauthenticated ${code_executable_name};
-printf "${NONE}"
+  if [ $? -eq 0 ]; then
+    printf "${BRIGHT}${GREEN}Repository install complete.${NONE}\n";
+  else
+    printf "${BRIGHT}${RED}Repository install failed.${NONE}\n";
+    exit 1;
+  fi;
 
-if [ $? -eq 0 ]; then
-  printf "${BRIGHT}${GREEN}Visual Studio Code install complete.${NONE}\n";
-else
-  printf "${BRIGHT}${RED}Visual Studio Code install failed.${NONE}\n";
-  exit 1;
-fi;
+  printf "${TITLE}Installing Visual Studio Code from [${ARGS}${repo_name}${NONE}${WHITE}]...${NONE}\n${DEBUG}";
+  # Install required PGP keys and additional repositories (jessie main)
+  sudo wget -qO - https://packagecloud.io/headmelted/codebuilds/gpgkey | sudo apt-key add -;
+  deb_pkg="https://packagecloud.io/headmelted/codebuilds/raspbian/"
+  [ "$(cat /etc/apt/sources.list | grep ${deb_pkg})" ] \
+  || sudo bash -c "echo 'deb ${deb_pkg} jessie main' > /etc/apt/sources.list";
+  # Now that the vscode-oss is available, lets install it
+  sudo apt-get install -t ${repo_name} -y ${code_executable_name};
+  # apt-get install -t ${repo_name} -y --allow-unauthenticated ${code_executable_name};
+  printf "${NONE}"
 
-printf "${TITLE}Installing git...${NONE}\n${DEBUG}";
-sudo apt-get install -y git;
-printf "${NONE}"
+  if [ $? -eq 0 ]; then
+    printf "${BRIGHT}${GREEN}Visual Studio Code install complete.${NONE}\n";
+  else
+    printf "${BRIGHT}${RED}Visual Studio Code install failed.${NONE}\n";
+    exit 1;
+  fi;
 
-if [ $? -eq 0 ]; then
-  echo "git install complete.";
-else
-  echo "git install failed.";
-  exit 1;
-fi;
+  printf "${TITLE}Installing git...${NONE}\n${DEBUG}";
+  sudo apt-get install -y git;
+  printf "${NONE}"
 
-printf "${TITLE}Installing any dependencies that may have been missed...${NONE}\n${DEBUG}";
-sudo apt-get install -y -f;
-printf "${NONE}"
+  if [ $? -eq 0 ]; then
+    echo "git install complete.";
+  else
+    echo "git install failed.";
+    exit 1;
+  fi;
 
-if [ $? -eq 0 ]; then
-  printf "${BRIGHT}${GREEN}Missed dependency install complete.${NONE}\n";
-else
-  printf "${BRIGHT}${RED}Missed dependency install failed.${NONE}\n";
-  exit 1;
-fi;
+  printf "${TITLE}Installing any dependencies that may have been missed...${NONE}\n${DEBUG}";
+  sudo apt-get install -y -f;
+  printf "${NONE}"
 
-echo "
+  if [ $? -eq 0 ]; then
+    printf "${BRIGHT}${GREEN}Missed dependency install complete.${NONE}\n";
+  else
+    printf "${BRIGHT}${RED}Missed dependency install failed.${NONE}\n";
+    exit 1;
+  fi;
+
+  echo "
 
 Installation complete!
 
@@ -126,3 +114,34 @@ You can start code at any time by calling \"${BRIGHT}${ARGS}${code_executable_na
 A shortcut should also now be available in your desktop menus (depending on your distribution).
 
 ";
+}
+
+function define_colors {
+  BOLD="\e[1m"
+  NONE="\e[0m"
+  WHITE="\e[97m"
+  SILVER="\e[37m"
+  BRIGHT="\e[1m"
+  RED="\e[31m"
+  GREEN="\e[32m"
+  BLUE="\e[34m"
+  YELLOW="\e[33m"
+  DEBUG="\e[90m"
+  UNDERLINE="\e[4m"
+  BRIGHT="\e[1m"
+  MAGENTA="\e[95m"
+  CYAN="\e[96m"
+  ARGS="${MAGENTA}"
+  VALUE="${UNDERLINE}${CYAN}"
+  LINK="${UNDERLINE}${BLUE}${BRIGHT}"
+  TITLE="\n${UNDERLINE}${WHITE}${BRIGHT}${BOLD}"
+  WARN="${BRIGHT}${BOLD}${YELLOW}"
+}
+
+function cleanup {
+  printf "${NONE}" # Reset terminal colors
+}
+
+# Bootstrap the app after setting the cleanup post processor
+trap cleanup EXIT
+start "$@" 

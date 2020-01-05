@@ -5,27 +5,19 @@ set -euo pipefail # Stop running the script on first error...
 # Enables remote SSH access to the rasberry pi device
 # See also: https://www.raspberrypi.org/documentation/remote-access/ssh/
 
-sudo systemctl enable ssh
-sudo systemctl start ssh
+function start {
+    define_colors
 
-# -----------------------------------------------------------------------------
-# While we are on the device, lets get the local SSH address (note it down for later):
-# -----------------------------------------------------------------------------
-HOST=$(hostname -I | cut -d ' ' -f1)
-BOLD="\e[1m"
-NONE="\e[0m"
-WHITE="\e[97m"
-SILVER="\e[37m"
-BRIGHT="\e[1m"
-BLUE="\e[34m"
-YELLOW="\e[33m"
-DEBUG="\e[90m"
-UNDERLINE="\e[4m"
-ARGS="\e[95m"
-LINK="${UNDERLINE}${BLUE}${BRIGHT}"
-TITLE="${UNDERLINE}${WHITE}${BRIGHT}${BOLD}"
-WARN="${BRIGHT}${BOLD}${YELLOW}"
-printf "
+    # Install and enable the SSH service
+    sudo systemctl enable ssh
+    sudo systemctl start ssh
+
+    display_help_text
+}
+
+function display_help_text {
+    HOST=$(hostname -I | cut -d ' ' -f1)
+    printf "
 ${DEBUG}${UNDERLINE}If you are using a VM (like VirtualBox), you need to set your network settings...${NONE}${DEBUG}
 In VirtualBox, go to:
 -> Settings -> Network -> Adapter 1 
@@ -39,3 +31,33 @@ ${DEBUG}  # Alternatively, open a remote vscode development environment on the d
 ${DEBUG} -> ${SILVER}code --remote ssh-remote+${LINK}${USER}@${HOST}${NONE} ${BOLD}${ARGS}/home/pi/${NONE}
 
 "
+}
+
+function define_colors {
+  BOLD="\e[1m"
+  DEBUG="\e[90m"
+  RED="\e[31m"
+  GREEN="\e[32m"
+  BLUE="\e[34m"
+  YELLOW="\e[33m"
+  NONE="\e[0m"
+  WHITE="\e[97m"
+  SILVER="\e[37m"
+  UNDERLINE="\e[4m"
+  BRIGHT="\e[1m"
+  MAGENTA="\e[95m"
+  CYAN="\e[96m"
+  ARGS="${MAGENTA}"
+  VALUE="${UNDERLINE}${CYAN}"
+  LINK="${UNDERLINE}${BLUE}${BRIGHT}"
+  TITLE="\n${UNDERLINE}${WHITE}${BRIGHT}${BOLD}"
+  WARN="${BRIGHT}${BOLD}${YELLOW}"
+}
+
+function cleanup {
+  printf "${NONE}" # Reset terminal colors
+}
+
+# Bootstrap the app after setting the cleanup post processor
+trap cleanup EXIT
+start "$@" 
